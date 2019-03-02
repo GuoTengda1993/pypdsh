@@ -58,9 +58,9 @@ def run(ip, username, password, command):
     for each_command in command:
         out, error = conn.remote_command(each_command)
         if out:
-            logger.info(ip + ': ' + out)
+            logger.info(ip + ':\r\n' + out.decode('utf-8'))
         if error:
-            logger.error(ip + ': ' + error)
+            logger.error(ip + ':\r\n' + error.decode('utf-8'))
     conn.close()
 
 

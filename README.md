@@ -26,5 +26,8 @@ Open Console, type `pypdsh -h`, you will see some parameters
 >-u USERNAME, --username=USERNAME
 >>username of host(s)
 
+>--log-level=LOG_LEVEL
+>>log level: INFO or ERROR
+
 >-v, -V, --version
 >>show version number of pypdsh and exit

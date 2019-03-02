@@ -1,6 +1,7 @@
 import os
 import csv
 import sys
+import time
 import getpass
 from optparse import OptionParser
 from threading import Thread
@@ -9,6 +10,12 @@ from .pypdsh import *
 
 version = pypdsh.__version__
 
+logName = time.strftime('%Y%m%d-%H%M%S', time.localtime()) + '_log.txt'
+handler = logging.FileHandler(logName)
+handler.setLevel(logging.INFO)
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+handler.setFormatter(formatter)
+logger.addHandler(handler)
 
 def parse_options():
     """
@@ -76,6 +83,15 @@ def parse_options():
         help="username of host(s)",
     )
 
+    parser.add_option(
+        '--log-level',
+        action='store',
+        type='str',
+        dest='log_level',
+        default="INFO",
+        help="log level: INFO or ERROR",
+    )
+
     # Version number (optparse gives you --version but we have to do it
     # ourselves to get -V too. sigh)
     parser.add_option(
@@ -114,6 +130,13 @@ def main():
     if options.file and not options.destination:
         logger.error('missing "-d" parameter' )
         sys.exit(1)
+
+    log_level = options.log_level
+    if log_level.upper() != 'INFO' and log_level.upper() != 'ERROR':
+        logger.error('log level should be INFO or ERROR')
+        sys.exit(1)
+    if log_level.upper() == 'INFO': logger.setLevel(logging.INFO)
+    if log_level.upper() == 'ERROR': logger.setLevel(logging.ERROR)
 
     if options.command:
         _mark = 1
@@ -160,7 +183,7 @@ def main():
             sys.exit(0)
     if options.IP:
         if options.username or options.password:
-            logger.info('"-u" and "-p" will not work with "-I"')
+            logger.warning('"-u" and "-p" will not work with "-I"')
         csv_file = options.IP
         with open(csv_file, 'r') as f:
             host_infos = csv.reader(f)
