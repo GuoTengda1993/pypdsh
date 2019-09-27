@@ -187,15 +187,20 @@ def main():
         csv_file = options.IP
         with open(csv_file, 'r') as f:
             host_infos = csv.reader(f)
+        thread_pool = []
         if _mark == 1:
             for host in host_infos:
                 t = Thread(target=run, args=(host[0], host[1], host[2], commands))
-                t.start()
-                t.join()
-                sys.exit(0)
+                thread_pool.append(t)
+            for _t in thread_pool:
+                _t.start()
+                _t.join()
+            sys.exit(0)
         if _mark == 2:
             for host in host_infos:
                 t = Thread(target=transfile, args=(host[0], host[1], host[2], source, dest))
-                t.start()
-                t.join()
-                sys.exit(0)
+                thread_pool.append(t)
+            for _t in thread_pool:
+                _t.start()
+                _t.join()
+            sys.exit(0)
