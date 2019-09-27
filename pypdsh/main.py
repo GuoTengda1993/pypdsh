@@ -200,7 +200,7 @@ def main():
             for host in host_infos:
                 t = Thread(target=transfile, args=(host[0], host[1], host[2], source, dest))
                 thread_pool.append(t)
+                t.start()
             for _t in thread_pool:
-                _t.start()
                 _t.join()
             sys.exit(0)
