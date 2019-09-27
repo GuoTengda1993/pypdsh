@@ -156,7 +156,9 @@ def main():
             pass
         else:
             dest = os.path.join(dest, filename)
-
+            
+    thread_pool = []
+    
     if options.ip:
         ip_list = gen_ip(options.ip)
         username = options.username
@@ -172,14 +174,18 @@ def main():
         if _mark == 1:
             for ip in ip_list:
                 t = Thread(target=run, args=(ip, username, password, commands))
+                thread_pool.append(t)
                 t.start()
-                t.join()
+            for _t in thread_pool:
+                _t.join()
             sys.exit(0)
         if _mark == 2:
             for ip in ip_list:
                 t = Thread(target=transfile, args=(ip, username, password, source, dest))
+                thread_pool.append(t)
                 t.start()
-                t.join()
+            for _t in thread_pool:
+                _t.join()
             sys.exit(0)
     if options.IP:
         if options.username or options.password:
@@ -187,13 +193,12 @@ def main():
         csv_file = options.IP
         with open(csv_file, 'r') as f:
             host_infos = csv.reader(f)
-        thread_pool = []
         if _mark == 1:
             for host in host_infos:
                 t = Thread(target=run, args=(host[0], host[1], host[2], commands))
                 thread_pool.append(t)
+                t.start()
             for _t in thread_pool:
-                _t.start()
                 _t.join()
             sys.exit(0)
         if _mark == 2:
