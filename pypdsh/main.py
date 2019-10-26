@@ -58,6 +58,14 @@ def parse_options():
     )
 
     parser.add_option(
+        '--get-file',
+        dest='get_file',
+        type='str',
+        help='Get file from remote host, and the file will be renamed by prefixing with IP',
+        default=''
+    )
+
+    parser.add_option(
         '-d', '--destination',
         dest='destination',
         type='str',
@@ -148,6 +156,9 @@ def main():
             commands = [command]
 
     if options.file:
+        if not options.destination:
+            logger.error('You lost "-d"')
+            sys.exit(0)
         _mark = 2
         source = options.file
         dest = options.destination
@@ -156,7 +167,15 @@ def main():
             pass
         else:
             dest = os.path.join(dest, filename)
-            
+
+    if options.get_file:
+        if not options.destination:
+            logger.error('You lost "-d"')
+            sys.exit(0)
+        _mark = 3
+        localpath = options.get_file
+        remote_file = options.destination
+
     thread_pool = []
     
     if options.ip:
@@ -187,6 +206,14 @@ def main():
             for _t in thread_pool:
                 _t.join()
             sys.exit(0)
+        if _mark == 3:
+            for ip in ip_list:
+                t = Thread(target=get_files, args=(ip, username, password, localpath, remote_file))
+                thread_pool.append(t)
+                t.start()
+            for _t in thread_pool:
+                _t.join()
+            sys.exit(0)
     if options.IP:
         if options.username or options.password:
             logger.warning('"-u" and "-p" will not work with "-I"')
@@ -204,6 +231,14 @@ def main():
         if _mark == 2:
             for host in host_infos:
                 t = Thread(target=transfile, args=(host[0], host[1], host[2], source, dest))
+                thread_pool.append(t)
+                t.start()
+            for _t in thread_pool:
+                _t.join()
+            sys.exit(0)
+        if _mark == 3:
+            for host in host_infos:
+                t = Thread(target=get_files, args=(host[0], host[1], host[2], localpath, remote_file))
                 thread_pool.append(t)
                 t.start()
             for _t in thread_pool:

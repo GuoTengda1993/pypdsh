@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import os
 import logging
 import paramiko
 
@@ -23,6 +24,13 @@ class Connect:
         ft = paramiko.SFTPClient.from_transport(trans)
         ft.put(localpath=source, remotepath=dest)
         ft.close()
+
+    def get_file(self, localfile, remotefile):
+        get_f = paramiko.Transport((self.ip, 22))
+        get_f.connect(username=self.username, password=self.password)
+        gt = paramiko.SFTPClient.from_transport(get_f)
+        gt.get(localpath=localfile, remotepath=remotefile)
+        gt.close()
 
     def remote_command(self, command):
         stdin, stdout, stderr = self.ssh.exec_command(command)
@@ -68,6 +76,15 @@ def transfile(ip, username, password, source, dest):
     conn = Connect(ip=ip, username=username, password=password)
     conn.trans_file(source, dest)
     logger.info(ip + ': Transmit {source} >> {dest} finish.'.format(source=source, dest=dest))
+
+
+def get_files(ip, username, password, localpath, remotefile):
+    filename = remotefile.split('/')[-1]
+    local_filename = ip + '_' + filename
+    local_file = os.path.join(localpath, local_filename)
+    conn = Connect(ip=ip, username=username, password=password)
+    conn.get_file(local_file, remotefile)
+    logger.info(ip + ': Get File {localpath} << {remotefile} finish.'.format(localpath=local_file, remotefile=remotefile))
 
 
 if __name__ == '__main__':
