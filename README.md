@@ -17,6 +17,9 @@ Open Console, type `pypdsh -h`, you will see some parameters
 >-f FILE, --file=FILE
 >>file to transmit to each host
 
+>-g LOCALPATH, --get=LOCALPATH
+>>get file from remote host
+
 >-d DESTINATION, --destination=DESTINATION
 >>destination path of each host, and this path must be existing in host(s)
 

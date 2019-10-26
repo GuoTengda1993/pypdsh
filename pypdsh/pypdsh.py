@@ -62,29 +62,38 @@ def gen_ip(ip):
 
 
 def run(ip, username, password, command):
-    conn = Connect(ip=ip, username=username, password=password)
-    for each_command in command:
-        out, error = conn.remote_command(each_command)
-        if out:
-            logger.info(ip + ':\r\n' + out.decode('utf-8'))
-        if error:
-            logger.error(ip + ':\r\n' + error.decode('utf-8'))
-    conn.close()
+    try:
+        conn = Connect(ip=ip, username=username, password=password)
+        for each_command in command:
+            out, error = conn.remote_command(each_command)
+            if out:
+                logger.info(ip + ':\r\n' + out.decode('utf-8'))
+            if error:
+                logger.error(ip + ':\r\n' + error.decode('utf-8'))
+        conn.close()
+    except paramiko.ssh_exception.AuthenticationException:
+        logger.error(ip + ': Authentication Fail, please check the password!')
 
 
 def transfile(ip, username, password, source, dest):
-    conn = Connect(ip=ip, username=username, password=password)
-    conn.trans_file(source, dest)
-    logger.info(ip + ': Transmit {source} >> {dest} finish.'.format(source=source, dest=dest))
+    try:
+        conn = Connect(ip=ip, username=username, password=password)
+        conn.trans_file(source, dest)
+        logger.info(ip + ': Transmit {source} >> {dest} finish.'.format(source=source, dest=dest))
+    except paramiko.ssh_exception.AuthenticationException:
+        logger.error(ip + ': Authentication Fail, please check the password!')
 
 
 def get_files(ip, username, password, localpath, remotefile):
     filename = remotefile.split('/')[-1]
     local_filename = ip + '_' + filename
     local_file = os.path.join(localpath, local_filename)
-    conn = Connect(ip=ip, username=username, password=password)
-    conn.get_file(local_file, remotefile)
-    logger.info(ip + ': Get File {localpath} << {remotefile} finish.'.format(localpath=local_file, remotefile=remotefile))
+    try:
+        conn = Connect(ip=ip, username=username, password=password)
+        conn.get_file(local_file, remotefile)
+        logger.info(ip + ': Get File {localpath} << {remotefile} finish.'.format(localpath=local_file, remotefile=remotefile))
+    except paramiko.ssh_exception.AuthenticationException:
+        logger.error(ip + ': Authentication Fail, please check the password!')
 
 
 if __name__ == '__main__':

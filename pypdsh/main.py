@@ -17,6 +17,7 @@ formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 
+
 def parse_options():
     """
     Handle command-line options with optparse.OptionParser.
@@ -58,10 +59,10 @@ def parse_options():
     )
 
     parser.add_option(
-        '--get-file',
+        '-g', '--get',
         dest='get_file',
         type='str',
-        help='Get file from remote host, and the file will be renamed by prefixing with IP',
+        help='Localpath: Get file from remote host to LOCALPATH, and the file will be renamed by prefixing with IP',
         default=''
     )
 
@@ -131,12 +132,20 @@ def main():
         logger.error('Cannot use "-c" and "-f" together')
         sys.exit(1)
 
-    if not options.command and not options.file:
+    if options.command and options.get_file:
+        logger.error('Cannot use "-c" and "--get-file" together')
+        sys.exit(1)
+
+    if not options.command and not options.file and not options.get_file:
         logger.error('Nothing to do')
         sys.exit(1)
 
     if options.file and not options.destination:
-        logger.error('missing "-d" parameter' )
+        logger.error('missing "-d" parameter')
+        sys.exit(1)
+
+    if options.get_file and not options.destination:
+        logger.error('missing "-d" parameter')
         sys.exit(1)
 
     log_level = options.log_level
@@ -156,9 +165,6 @@ def main():
             commands = [command]
 
     if options.file:
-        if not options.destination:
-            logger.error('You lost "-d"')
-            sys.exit(0)
         _mark = 2
         source = options.file
         dest = options.destination
@@ -169,9 +175,6 @@ def main():
             dest = os.path.join(dest, filename)
 
     if options.get_file:
-        if not options.destination:
-            logger.error('You lost "-d"')
-            sys.exit(0)
         _mark = 3
         localpath = options.get_file
         remote_file = options.destination
