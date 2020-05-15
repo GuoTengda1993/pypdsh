@@ -1,36 +1,37 @@
 # pypdsh
-PDSH in Python version.
+Pdsh in Python version.
 ## How to Use It?
-Open Console, type `pypdsh -h`, you will see some parameters
->-h, --help
->>show this help message and exit
+Open your console, type `pypdsh -h`, you will see some parameters:
 
->-i IP, --ip=IP
->>single ip or ip in format '192.168.1.[1-10,16,19,30-40]'
+`-h, --help` -- 
+show this help message and exit
 
->-I IP, --IP=IP
->>ip(s) in CSV file: ip | username | password
+`-i IP, --ip=IP` -- 
+single ip or ip in format '192.168.1.[1-10,16,19,30-40]'
 
->-c COMMAND, --command=COMMAND
->>single command or command in TXT file
+`-I IP, --IP=IP` -- 
+ip(s) in CSV file: ip | username | password
 
->-f FILE, --file=FILE
->>file to transmit to each host
+`-c COMMAND, --command=COMMAND` -- 
+single command or command in TXT file
 
->-g LOCALPATH, --get=LOCALPATH
->>get file from remote host
+`-f FILE, --file=FILE` -- 
+file to transmit to each host
 
->-d DESTINATION, --destination=DESTINATION
->>destination path of each host, and this path must be existing in host(s)
+`-g LOCALPATH, --get=LOCALPATH` -- 
+get file from remote host
 
->-p PASSWORD, --password=PASSWORD
->>password of host(s)
+`-d DESTINATION, --destination=DESTINATION` -- 
+destination path of each host, and this path must be existing in host(s)
 
->-u USERNAME, --username=USERNAME
->>username of host(s)
+`-p PASSWORD, --password=PASSWORD` -- 
+password of host(s)
 
->--log-level=LOG_LEVEL
->>log level: INFO or ERROR
+`-u USERNAME, --username=USERNAME` -- 
+username of host(s)
 
->-v, -V, --version
->>show version number of pypdsh and exit
+`--log-level=LOG_LEVEL` -- 
+log level: INFO or ERROR
+
+`-v, -V, --version` -- 
+show version number of pypdsh and exit

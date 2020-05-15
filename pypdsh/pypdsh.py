@@ -7,7 +7,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 
-class Connect:
+class SSHAgent:
 
     def __init__(self, ip, password, username='root', port=22):
         self.ip = ip
@@ -17,18 +17,23 @@ class Connect:
         self.ssh = paramiko.SSHClient()
         self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         self.ssh.connect(hostname=self.ip, port=self.port, username=self.username, password=self.password)
+        self.trans = paramiko.Transport((self.ip, port))
+        self.trans.connect(username=self.username, password=self.password)
+
+    def __enter__(self):
+        pass
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.ssh.close()
+        self.trans.close()
 
     def trans_file(self, source, dest):
-        trans = paramiko.Transport((self.ip, 22))
-        trans.connect(username=self.username, password=self.password)
-        ft = paramiko.SFTPClient.from_transport(trans)
+        ft = paramiko.SFTPClient.from_transport(self.trans)
         ft.put(localpath=source, remotepath=dest)
         ft.close()
 
     def get_file(self, localfile, remotefile):
-        get_f = paramiko.Transport((self.ip, 22))
-        get_f.connect(username=self.username, password=self.password)
-        gt = paramiko.SFTPClient.from_transport(get_f)
+        gt = paramiko.SFTPClient.from_transport(self.trans)
         gt.get(localpath=localfile, remotepath=remotefile)
         gt.close()
 
@@ -38,6 +43,7 @@ class Connect:
 
     def close(self):
         self.ssh.close()
+        self.trans.close()
 
 
 def gen_ip(ip):
@@ -63,23 +69,24 @@ def gen_ip(ip):
 
 def run(ip, username, password, command):
     try:
-        conn = Connect(ip=ip, username=username, password=password)
-        for each_command in command:
-            out, error = conn.remote_command(each_command)
-            if out:
-                logger.info(ip + ':\r\n' + out.decode('utf-8'))
-            if error:
-                logger.error(ip + ':\r\n' + error.decode('utf-8'))
-        conn.close()
+        conn = SSHAgent(ip=ip, username=username, password=password)
+        with conn:
+            for each_command in command:
+                out, error = conn.remote_command(each_command)
+                if out:
+                    logger.info(ip + ':\r\n' + out.decode('utf-8'))
+                if error:
+                    logger.error(ip + ':\r\n' + error.decode('utf-8'))
     except paramiko.ssh_exception.AuthenticationException:
         logger.error(ip + ': Authentication Fail, please check the password!')
 
 
 def transfile(ip, username, password, source, dest):
     try:
-        conn = Connect(ip=ip, username=username, password=password)
-        conn.trans_file(source, dest)
-        logger.info(ip + ': Transmit {source} >> {dest} finish.'.format(source=source, dest=dest))
+        conn = SSHAgent(ip=ip, username=username, password=password)
+        with conn:
+            conn.trans_file(source, dest)
+            logger.info(ip + ': Transmit {source} >> {dest} finish.'.format(source=source, dest=dest))
     except paramiko.ssh_exception.AuthenticationException:
         logger.error(ip + ': Authentication Fail, please check the password!')
 
@@ -89,9 +96,10 @@ def get_files(ip, username, password, localpath, remotefile):
     local_filename = ip + '_' + filename
     local_file = os.path.join(localpath, local_filename)
     try:
-        conn = Connect(ip=ip, username=username, password=password)
-        conn.get_file(local_file, remotefile)
-        logger.info(ip + ': Get File {localpath} << {remotefile} finish.'.format(localpath=local_file, remotefile=remotefile))
+        conn = SSHAgent(ip=ip, username=username, password=password)
+        with conn:
+            conn.get_file(local_file, remotefile)
+            logger.info(ip + ': Get File {localpath} << {remotefile} finish.'.format(localpath=local_file, remotefile=remotefile))
     except paramiko.ssh_exception.AuthenticationException:
         logger.error(ip + ': Authentication Fail, please check the password!')
 
